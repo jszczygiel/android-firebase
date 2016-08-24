@@ -20,10 +20,13 @@ import com.jszczygiel.foundation.rx.retry.RetryBuilder;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import rx.Observable;
+import rx.Scheduler;
 import rx.Subscriber;
+import rx.schedulers.Schedulers;
 
 public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
 
@@ -40,6 +43,8 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
         collectionSubject = PublishSubject.createWith(PublishSubject.BUFFER);
         models = new ConcurrentHashMap<>();
         subject = PublishSubject.createWith(PublishSubject.BUFFER);
+
+
     }
 
     public abstract String getTableName();
@@ -165,12 +170,14 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
     @Override
     public void update(T model) {
         checkPreConditions();
-        getReference().child(model.getId()).setValue(model);
         T oldModel = models.get(model.getId());
         if (oldModel != null && oldModel.equals(model)) {
             updateInternal(model);
         }
+        getReference().child(model.getId()).setValue(model);
     }
+
+
 
     @Override
     public Observable<Tuple<Integer, T>> observe() {
