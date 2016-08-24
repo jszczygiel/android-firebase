@@ -15,10 +15,12 @@ import com.jszczygiel.foundation.helpers.LoggerHelper;
 import com.jszczygiel.foundation.repos.interfaces.BaseModel;
 import com.jszczygiel.foundation.repos.interfaces.Repo;
 import com.jszczygiel.foundation.rx.PublishSubject;
+import com.jszczygiel.foundation.rx.retry.RetryBuilder;
 
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import rx.Observable;
 import rx.Subscriber;
@@ -105,10 +107,10 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
 
     @Override
     public Observable<T> get(final String id) {
-        if (models.get(id) == null) {
-            return Observable.create(new Observable.OnSubscribe<T>() {
-                @Override
-                public void call(final Subscriber<? super T> subscriber) {
+        return Observable.create(new Observable.OnSubscribe<T>() {
+            @Override
+            public void call(final Subscriber<? super T> subscriber) {
+                if (models.get(id) == null) {
                     getReference().child(id).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
@@ -124,11 +126,15 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
                         public void onCancelled(DatabaseError databaseError) {
                             subscriber.onError(databaseError.toException());
                         }
+
                     });
+                } else {
+                    subscriber.onNext(models.get(id));
+                    subscriber.onCompleted();
+
                 }
-            });
-        }
-        return Observable.just(models.get(id));
+            }
+        }).timeout(200, TimeUnit.SECONDS).retryWhen(RetryBuilder.any().max(15).build());
     }
 
     @Override
