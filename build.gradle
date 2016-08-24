@@ -1,0 +1,80 @@
+buildscript {
+    repositories {
+        maven { url 'https://maven.fabric.io/public' }
+        jcenter()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.2.0-beta2'
+        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.4.1'
+        classpath 'com.google.gms:google-services:3.0.0'
+    }
+}
+allprojects {
+    repositories {
+        maven { url 'https://maven.fabric.io/public' }
+        jcenter()
+        maven { url "https://jitpack.io" }
+        mavenCentral()
+    }
+    buildscript {
+        repositories {
+            maven { url 'https://maven.fabric.io/public' }
+            jcenter()
+            maven { url "https://jitpack.io" }
+            mavenCentral()
+        }
+    }
+}
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+
+
+apply plugin: 'com.android.library'
+apply plugin: 'com.github.dcendents.android-maven'
+
+group='com.github.jszczygiel'
+
+android {
+    compileSdkVersion 24
+    buildToolsVersion "24.0.1"
+
+    defaultConfig {
+        minSdkVersion 15
+        targetSdkVersion 24
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+
+configurations.all {
+    resolutionStrategy.force 'com.android.support:support-annotations:24.1.1'
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile project(':android-common')
+
+    //data
+    compile 'com.google.firebase:firebase-database:9.4.0'
+    compile 'com.google.firebase:firebase-auth:9.4.0'
+    compile 'com.google.android.gms:play-services-auth:9.4.0'
+
+    testCompile 'junit:junit:4.12'
+    androidTestCompile 'com.android.support.test.espresso:espresso-core:2.2.2'
+    androidTestCompile 'com.android.support.test:runner:0.5'
+    androidTestCompile 'com.android.support:support-annotations:24.2.0'
+
+
+}
