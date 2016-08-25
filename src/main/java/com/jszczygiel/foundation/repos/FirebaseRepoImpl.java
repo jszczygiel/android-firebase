@@ -93,7 +93,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
         return Observable.create(new Observable.OnSubscribe<T>() {
             @Override
             public void call(final Subscriber<? super T> subscriber) {
-                getReference().child(id).addListenerForSingleValueEvent(new ValueEventListener() {
+                getReference().child(id).orderByKey().addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         T model = dataSnapshot.getValue(getType());
