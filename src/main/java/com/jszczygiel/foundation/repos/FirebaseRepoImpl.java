@@ -52,17 +52,23 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
             reference = getReference().addChildEventListener(new ChildEventListener() {
                 @Override
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                    subject.onNext(new Tuple<>(SubjectAction.ADDED, dataSnapshot.getValue(getType())));
+                    if (subject.hasObservers()) {
+                        subject.onNext(new Tuple<>(SubjectAction.ADDED, dataSnapshot.getValue(getType())));
+                    }
                 }
 
                 @Override
                 public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                    subject.onNext(new Tuple<>(SubjectAction.CHANGED, dataSnapshot.getValue(getType())));
+                    if (subject.hasObservers()) {
+                        subject.onNext(new Tuple<>(SubjectAction.CHANGED, dataSnapshot.getValue(getType())));
+                    }
                 }
 
                 @Override
                 public void onChildRemoved(DataSnapshot dataSnapshot) {
-                    subject.onNext(new Tuple<>(SubjectAction.REMOVED, dataSnapshot.getValue(getType())));
+                    if (subject.hasObservers()) {
+                        subject.onNext(new Tuple<>(SubjectAction.REMOVED, dataSnapshot.getValue(getType())));
+                    }
                 }
 
                 @Override
@@ -118,7 +124,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
         return Observable.create(new Observable.OnSubscribe<T>() {
             @Override
             public void call(final Subscriber<? super T> subscriber) {
-                getReference().orderByKey().addValueEventListener(new ValueEventListener() {
+                getReference().orderByKey().addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
@@ -127,7 +133,6 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
                                 subscriber.onNext(model);
                             }
                         }
-
                         subscriber.onCompleted();
                     }
 
@@ -140,6 +145,13 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
             }
         });
 
+    }
+
+    @Override
+    public void notify(T model) {
+        if (subject.hasObservers()) {
+            subject.onNext(new Tuple<>(SubjectAction.CHANGED, model));
+        }
     }
 
     @Override
