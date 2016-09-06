@@ -15,6 +15,7 @@ import com.jszczygiel.foundation.helpers.LoggerHelper;
 import com.jszczygiel.foundation.repos.interfaces.BaseModel;
 import com.jszczygiel.foundation.repos.interfaces.Repo;
 import com.jszczygiel.foundation.rx.PublishSubject;
+import com.jszczygiel.foundation.rx.schedulers.SchedulerHelper;
 
 import java.util.HashMap;
 import java.util.List;
@@ -116,7 +117,8 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
                     }
                 });
             }
-        });
+        }).subscribeOn(SchedulerHelper.getDatabaseScheduler())
+                .observeOn(SchedulerHelper.getDatabaseScheduler());
     }
 
     @Override
@@ -143,7 +145,8 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
                     }
                 });
             }
-        });
+        }).subscribeOn(SchedulerHelper.getDatabaseScheduler())
+                .observeOn(SchedulerHelper.getDatabaseScheduler());
 
     }
 
