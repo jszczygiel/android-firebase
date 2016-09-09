@@ -97,6 +97,8 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
 
     @Override
     public Observable<T> get(final String id) {
+        LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " get:" + id);
+
         return Observable.create(new Observable.OnSubscribe<T>() {
             @Override
             public void call(final Subscriber<? super T> subscriber) {
@@ -123,6 +125,8 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
 
     @Override
     public Observable<T> getAll() {
+        LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " getAll");
+
         return Observable.create(new Observable.OnSubscribe<T>() {
             @Override
             public void call(final Subscriber<? super T> subscriber) {
@@ -152,6 +156,8 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
 
     @Override
     public void notify(T model) {
+        LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " notify");
+
         if (subject.hasObservers()) {
             subject.onNext(new Tuple<>(SubjectAction.CHANGED, model));
         }
@@ -159,6 +165,8 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
 
     @Override
     public void add(T model) {
+        LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " add");
+
         checkPreConditions();
         getReference().child(model.getId()).setValue(model);
     }
@@ -171,6 +179,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
 
     @Override
     public Observable<T> remove(final String id) {
+        LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " remove");
         checkPreConditions();
         return get(id).map(new Func1<T, T>() {
             @Override
@@ -183,6 +192,8 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
 
     @Override
     public void update(T model) {
+        LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " update");
+
         checkPreConditions();
         Map<String, Object> hashMap = new HashMap<>();
         hashMap.put(model.getId(), model.toMap());
@@ -201,6 +212,8 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
 
     @Override
     public void clear() {
+        LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " update");
+
         checkPreConditions();
         getReference().removeValue();
     }
