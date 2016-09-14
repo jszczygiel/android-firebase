@@ -17,12 +17,11 @@ import com.jszczygiel.foundation.repos.interfaces.Repo;
 import com.jszczygiel.foundation.rx.PublishSubject;
 import com.jszczygiel.foundation.rx.schedulers.SchedulerHelper;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import rx.Observable;
 import rx.Subscriber;
+import rx.functions.Action1;
 import rx.functions.Func1;
 
 public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
@@ -191,13 +190,16 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
     }
 
     @Override
-    public void update(T model) {
-        LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " update");
-
+    public void update(final T model) {
         checkPreConditions();
-        Map<String, Object> hashMap = new HashMap<>();
-        hashMap.put(model.getId(), model.toMap());
-        getReference().updateChildren(hashMap);
+        LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " update");
+        get(model.getId()).subscribe(new Action1<T>() {
+            @Override
+            public void call(T next) {
+                FirebaseRepoImpl.this.getReference().updateChildren(model.toMap(next));
+            }
+        });
+
     }
 
     @Override
