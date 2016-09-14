@@ -105,15 +105,19 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         T model = dataSnapshot.getValue(getType());
-                        if (model != null) {
+                        if (model != null && !subscriber.isUnsubscribed()) {
                             subscriber.onNext(model);
                         }
-                        subscriber.onCompleted();
+                        if (!subscriber.isUnsubscribed()) {
+                            subscriber.onCompleted();
+                        }
                     }
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
-                        subscriber.onError(databaseError.toException());
+                        if (!subscriber.isUnsubscribed()) {
+                            subscriber.onError(databaseError.toException());
+                        }
 
                     }
                 });
@@ -134,17 +138,20 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                             T model = snapshot.getValue(getType());
-                            if (model != null) {
+                            if (model != null && !subscriber.isUnsubscribed()) {
                                 subscriber.onNext(model);
                             }
                         }
-                        subscriber.onCompleted();
+                        if (!subscriber.isUnsubscribed()) {
+                            subscriber.onCompleted();
+                        }
                     }
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
-                        subscriber.onError(databaseError.toException());
-
+                        if (!subscriber.isUnsubscribed()) {
+                            subscriber.onError(databaseError.toException());
+                        }
                     }
                 });
             }
