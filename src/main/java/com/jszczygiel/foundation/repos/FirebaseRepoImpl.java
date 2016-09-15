@@ -19,8 +19,8 @@ import com.jszczygiel.foundation.rx.schedulers.SchedulerHelper;
 
 import java.util.List;
 
+import rx.AsyncEmitter;
 import rx.Observable;
-import rx.Subscriber;
 import rx.functions.Action1;
 import rx.functions.Func1;
 
@@ -98,66 +98,63 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
     public Observable<T> get(final String id) {
         LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " get:" + id);
 
-        return Observable.create(new Observable.OnSubscribe<T>() {
+        return Observable.fromEmitter(new Action1<AsyncEmitter<T>>() {
             @Override
-            public void call(final Subscriber<? super T> subscriber) {
+            public void call(final AsyncEmitter<T> emitter) {
                 getReference().child(id).orderByKey().addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         T model = dataSnapshot.getValue(getType());
-                        if (model != null && !subscriber.isUnsubscribed()) {
-                            subscriber.onNext(model);
+                        if (model != null) {
+                            emitter.onNext(model);
                         }
-                        if (!subscriber.isUnsubscribed()) {
-                            subscriber.onCompleted();
-                        }
+                        emitter.onCompleted();
+
                     }
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
-                        if (!subscriber.isUnsubscribed()) {
-                            subscriber.onError(databaseError.toException());
-                        }
+                        emitter.onError(databaseError.toException());
 
                     }
                 });
             }
-        }).subscribeOn(SchedulerHelper.getDatabaseScheduler())
+        }, AsyncEmitter.BackpressureMode.BUFFER)
+                .subscribeOn(SchedulerHelper.getDatabaseScheduler())
                 .observeOn(SchedulerHelper.getDatabaseScheduler());
+
     }
 
     @Override
     public Observable<T> getAll() {
         LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " getAll");
 
-        return Observable.create(new Observable.OnSubscribe<T>() {
+        return Observable.fromEmitter(new Action1<AsyncEmitter<T>>() {
             @Override
-            public void call(final Subscriber<? super T> subscriber) {
+            public void call(final AsyncEmitter<T> emitter) {
                 getReference().orderByKey().addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                             T model = snapshot.getValue(getType());
-                            if (model != null && !subscriber.isUnsubscribed()) {
-                                subscriber.onNext(model);
+                            if (model != null) {
+                                emitter.onNext(model);
                             }
                         }
-                        if (!subscriber.isUnsubscribed()) {
-                            subscriber.onCompleted();
-                        }
+                        emitter.onCompleted();
+
                     }
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
-                        if (!subscriber.isUnsubscribed()) {
-                            subscriber.onError(databaseError.toException());
-                        }
+                        emitter.onError(databaseError.toException());
+
                     }
                 });
             }
-        }).subscribeOn(SchedulerHelper.getDatabaseScheduler())
+        }, AsyncEmitter.BackpressureMode.BUFFER)
+                .subscribeOn(SchedulerHelper.getDatabaseScheduler())
                 .observeOn(SchedulerHelper.getDatabaseScheduler());
-
     }
 
     @Override
