@@ -21,6 +21,7 @@ import java.util.List;
 
 import rx.AsyncEmitter;
 import rx.Observable;
+import rx.exceptions.OnErrorNotImplementedException;
 import rx.functions.Action1;
 import rx.functions.Func1;
 
@@ -201,6 +202,11 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
             @Override
             public void call(T next) {
                 FirebaseRepoImpl.this.getReference().updateChildren(model.toMap(next));
+            }
+        }, new Action1<Throwable>() {
+            @Override
+            public void call(Throwable throwable) {
+                throw new OnErrorNotImplementedException(throwable);
             }
         });
 
