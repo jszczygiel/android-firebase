@@ -98,6 +98,10 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
     @Override
     public Observable<T> get(final String id) {
         LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " get:" + id);
+        checkPreConditions();
+        if (TextUtils.isEmpty(id)) {
+            throw new DatabaseException("no valid itemId");
+        }
 
         return Observable.fromEmitter(new Action1<AsyncEmitter<T>>() {
             @Override
@@ -129,6 +133,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
     @Override
     public Observable<T> getAll() {
         LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " getAll");
+        checkPreConditions();
 
         return Observable.fromEmitter(new Action1<AsyncEmitter<T>>() {
             @Override
