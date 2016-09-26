@@ -96,7 +96,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
     public abstract Class<T> getType();
 
     @Override
-    public Observable<T> get(final String id) {
+    public Observable<T> get(final String id, final String referenceId) {
         LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " get:" + id);
         checkPreConditions();
         if (TextUtils.isEmpty(id)) {
@@ -106,7 +106,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
         return Observable.fromEmitter(new Action1<AsyncEmitter<T>>() {
             @Override
             public void call(final AsyncEmitter<T> emitter) {
-                getReference().child(id).orderByKey().addListenerForSingleValueEvent(new ValueEventListener() {
+                table.child(referenceId).child(id).orderByKey().addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         T model = dataSnapshot.getValue(getType());
@@ -128,6 +128,11 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
                 .subscribeOn(SchedulerHelper.getDatabaseScheduler())
                 .observeOn(SchedulerHelper.getDatabaseScheduler());
 
+    }
+
+    @Override
+    public Observable<T> get(final String id) {
+        return get(id, userId);
     }
 
     @Override
