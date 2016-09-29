@@ -125,8 +125,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
                 });
             }
         }, AsyncEmitter.BackpressureMode.BUFFER)
-                .subscribeOn(SchedulerHelper.getDatabaseScheduler())
-                .observeOn(SchedulerHelper.getDatabaseScheduler());
+                .subscribeOn(SchedulerHelper.getDatabaseReaderScheduler());
 
     }
 
@@ -164,8 +163,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
                 });
             }
         }, AsyncEmitter.BackpressureMode.BUFFER)
-                .subscribeOn(SchedulerHelper.getDatabaseScheduler())
-                .observeOn(SchedulerHelper.getDatabaseScheduler());
+                .subscribeOn(SchedulerHelper.getDatabaseReaderScheduler());
     }
 
     @Override
@@ -195,7 +193,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
     public Observable<T> remove(final String id) {
         LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " remove");
         checkPreConditions();
-        return get(id).map(new Func1<T, T>() {
+        return get(id).observeOn(SchedulerHelper.getDatabaseWriterScheduler()).map(new Func1<T, T>() {
             @Override
             public T call(T map) {
                 FirebaseRepoImpl.this.getReference().child(id).removeValue();
@@ -208,7 +206,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
     public void update(final T model) {
         checkPreConditions();
         LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " update");
-        get(model.getId()).subscribe(new Action1<T>() {
+        get(model.getId()).observeOn(SchedulerHelper.getDatabaseWriterScheduler()).subscribe(new Action1<T>() {
             @Override
             public void call(T next) {
                 FirebaseRepoImpl.this.getReference().updateChildren(model.toMap(next));
