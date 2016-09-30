@@ -48,6 +48,11 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
         init();
     }
 
+    @Override
+    public String getUserId() {
+        return userId;
+    }
+
     private void init() {
         if (reference == null) {
             reference = getReference().addChildEventListener(new ChildEventListener() {
