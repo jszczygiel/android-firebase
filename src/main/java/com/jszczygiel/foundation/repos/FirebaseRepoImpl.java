@@ -24,6 +24,7 @@ import rx.Observable;
 import rx.exceptions.OnErrorNotImplementedException;
 import rx.functions.Action1;
 import rx.functions.Func1;
+import rx.schedulers.Schedulers;
 
 public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
 
@@ -130,7 +131,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
                 });
             }
         }, AsyncEmitter.BackpressureMode.BUFFER)
-                .subscribeOn(SchedulerHelper.getDatabaseReaderScheduler());
+                .subscribeOn(Schedulers.newThread());
 
     }
 
@@ -168,7 +169,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
                 });
             }
         }, AsyncEmitter.BackpressureMode.BUFFER)
-                .subscribeOn(SchedulerHelper.getDatabaseReaderScheduler());
+                .subscribeOn(Schedulers.newThread());
     }
 
     @Override
