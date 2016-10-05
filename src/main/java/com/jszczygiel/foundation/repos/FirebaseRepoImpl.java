@@ -13,7 +13,6 @@ import com.jszczygiel.foundation.containers.Tuple;
 import com.jszczygiel.foundation.enums.SubjectAction;
 import com.jszczygiel.foundation.helpers.LoggerHelper;
 import com.jszczygiel.foundation.repos.interfaces.BaseModel;
-import com.jszczygiel.foundation.repos.interfaces.Repo;
 import com.jszczygiel.foundation.rx.PublishSubject;
 import com.jszczygiel.foundation.rx.schedulers.SchedulerHelper;
 
@@ -26,7 +25,7 @@ import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
-public abstract class FirebaseRepoImpl<T extends BaseModel> implements Repo<T> {
+public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseRepo<T> {
 
     protected final DatabaseReference table;
     private final PublishSubject<Tuple<Integer, T>> subject;
