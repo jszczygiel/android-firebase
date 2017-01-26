@@ -50,11 +50,16 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
 
     @Override
     public void setUserId(String userId) {
+        boolean userIdChanged = !userId.equals(this.userId);
         this.userId = userId;
-        init();
+        init(userIdChanged);
     }
 
-    private void init() {
+    private void init(boolean userIdChanged) {
+        if (userIdChanged && reference != null) {
+            getReference().removeEventListener(reference);
+            reference = null;
+        }
         if (reference == null) {
             reference = getReference().addChildEventListener(new ChildEventListener() {
                 @Override
@@ -133,6 +138,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
 
                             }
                         });
+
             }
         }, AsyncEmitter.BackpressureMode.BUFFER)
                 .subscribeOn(Schedulers.newThread());
