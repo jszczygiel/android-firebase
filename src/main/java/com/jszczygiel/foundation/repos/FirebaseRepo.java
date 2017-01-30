@@ -6,7 +6,7 @@ import com.jszczygiel.foundation.repos.interfaces.Repo;
 import rx.Observable;
 
 public interface FirebaseRepo<T extends BaseModel> extends Repo<T> {
-    void setUserId(String userId);
+    Observable<Void> setUserId(String userId);
 
     String getUserId();
 

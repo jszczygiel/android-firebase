@@ -1,7 +1,5 @@
 package com.jszczygiel.foundation.repos;
 
-import android.text.TextUtils;
-
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -9,6 +7,9 @@ import com.google.firebase.database.DatabaseException;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import android.text.TextUtils;
+
 import com.jszczygiel.foundation.containers.Tuple;
 import com.jszczygiel.foundation.enums.SubjectAction;
 import com.jszczygiel.foundation.helpers.LoggerHelper;
@@ -17,6 +18,7 @@ import com.jszczygiel.foundation.rx.PublishSubject;
 import com.jszczygiel.foundation.rx.schedulers.SchedulerHelper;
 
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import rx.AsyncEmitter;
 import rx.Observable;
@@ -43,9 +45,16 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
     public abstract String getTableName();
 
     @Override
-    public void setUserId(String userId) {
+    public Observable<Void> setUserId(String userId) {
         this.userId = userId;
-        init();
+        return Observable.fromCallable(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                init();
+                return null;
+            }
+        });
+
     }
 
     @Override
@@ -59,21 +68,24 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
                 @Override
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                     if (subject.hasObservers()) {
-                        subject.onNext(new Tuple<>(SubjectAction.ADDED, dataSnapshot.getValue(getType())));
+                        subject.onNext(
+                                new Tuple<>(SubjectAction.ADDED, dataSnapshot.getValue(getType())));
                     }
                 }
 
                 @Override
                 public void onChildChanged(DataSnapshot dataSnapshot, String s) {
                     if (subject.hasObservers()) {
-                        subject.onNext(new Tuple<>(SubjectAction.CHANGED, dataSnapshot.getValue(getType())));
+                        subject.onNext(new Tuple<>(SubjectAction.CHANGED,
+                                dataSnapshot.getValue(getType())));
                     }
                 }
 
                 @Override
                 public void onChildRemoved(DataSnapshot dataSnapshot) {
                     if (subject.hasObservers()) {
-                        subject.onNext(new Tuple<>(SubjectAction.REMOVED, dataSnapshot.getValue(getType())));
+                        subject.onNext(new Tuple<>(SubjectAction.REMOVED,
+                                dataSnapshot.getValue(getType())));
                     }
                 }
 
@@ -111,23 +123,24 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
         return Observable.fromEmitter(new Action1<AsyncEmitter<T>>() {
             @Override
             public void call(final AsyncEmitter<T> emitter) {
-                table.child(referenceId).child(id).orderByKey().addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        T model = dataSnapshot.getValue(getType());
-                        if (model != null) {
-                            emitter.onNext(model);
-                        }
-                        emitter.onCompleted();
+                table.child(referenceId).child(id).orderByKey().addListenerForSingleValueEvent(
+                        new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                T model = dataSnapshot.getValue(getType());
+                                if (model != null) {
+                                    emitter.onNext(model);
+                                }
+                                emitter.onCompleted();
 
-                    }
+                            }
 
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        emitter.onError(databaseError.toException());
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+                                emitter.onError(databaseError.toException());
 
-                    }
-                });
+                            }
+                        });
             }
         }, AsyncEmitter.BackpressureMode.BUFFER)
                 .subscribeOn(Schedulers.newThread());
@@ -147,25 +160,26 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
         return Observable.fromEmitter(new Action1<AsyncEmitter<T>>() {
             @Override
             public void call(final AsyncEmitter<T> emitter) {
-                getReference().orderByKey().addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                            T model = snapshot.getValue(getType());
-                            if (model != null) {
-                                emitter.onNext(model);
+                getReference().orderByKey().addListenerForSingleValueEvent(
+                        new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                    T model = snapshot.getValue(getType());
+                                    if (model != null) {
+                                        emitter.onNext(model);
+                                    }
+                                }
+                                emitter.onCompleted();
+
                             }
-                        }
-                        emitter.onCompleted();
 
-                    }
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+                                emitter.onError(databaseError.toException());
 
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        emitter.onError(databaseError.toException());
-
-                    }
-                });
+                            }
+                        });
             }
         }, AsyncEmitter.BackpressureMode.BUFFER)
                 .subscribeOn(Schedulers.newThread());
@@ -198,30 +212,32 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
     public Observable<T> remove(final String id) {
         LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " remove");
         checkPreConditions();
-        return get(id).observeOn(SchedulerHelper.getDatabaseWriterScheduler()).map(new Func1<T, T>() {
-            @Override
-            public T call(T map) {
-                FirebaseRepoImpl.this.getReference().child(id).removeValue();
-                return map;
-            }
-        });
+        return get(id).observeOn(SchedulerHelper.getDatabaseWriterScheduler()).map(
+                new Func1<T, T>() {
+                    @Override
+                    public T call(T map) {
+                        FirebaseRepoImpl.this.getReference().child(id).removeValue();
+                        return map;
+                    }
+                });
     }
 
     @Override
     public void update(final T model) {
         checkPreConditions();
         LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " update");
-        get(model.getId()).observeOn(SchedulerHelper.getDatabaseWriterScheduler()).subscribe(new Action1<T>() {
-            @Override
-            public void call(T next) {
-                FirebaseRepoImpl.this.getReference().updateChildren(model.toMap(next));
-            }
-        }, new Action1<Throwable>() {
-            @Override
-            public void call(Throwable throwable) {
-                throw new OnErrorNotImplementedException(throwable);
-            }
-        });
+        get(model.getId()).observeOn(SchedulerHelper.getDatabaseWriterScheduler()).subscribe(
+                new Action1<T>() {
+                    @Override
+                    public void call(T next) {
+                        FirebaseRepoImpl.this.getReference().updateChildren(model.toMap(next));
+                    }
+                }, new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        throw new OnErrorNotImplementedException(throwable);
+                    }
+                });
 
     }
 
