@@ -58,6 +58,12 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
 
     }
 
+    @Override
+    public String getUserId() {
+        return userId;
+    }
+
+
     private void init(boolean userIdChanged) {
         if (userIdChanged && reference != null) {
             getReference().removeEventListener(reference);
