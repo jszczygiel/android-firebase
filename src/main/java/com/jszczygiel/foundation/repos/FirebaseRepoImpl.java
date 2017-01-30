@@ -18,7 +18,6 @@ import com.jszczygiel.foundation.rx.PublishSubject;
 import com.jszczygiel.foundation.rx.schedulers.SchedulerHelper;
 
 import java.util.List;
-import java.util.concurrent.Callable;
 
 import rx.AsyncEmitter;
 import rx.Observable;
@@ -45,16 +44,11 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
     public abstract String getTableName();
 
     @Override
-    public Observable<Void> setUserId(String userId) {
+    public Observable<Boolean> setUserId(String userId) {
         final boolean userIdChanged = !userId.equals(this.userId);
         this.userId = userId;
-        return Observable.fromCallable(new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                init(userIdChanged);
-                return null;
-            }
-        });
+        init(userIdChanged);
+        return Observable.just(true);
 
     }
 
@@ -62,7 +56,6 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
     public String getUserId() {
         return userId;
     }
-
 
     private void init(boolean userIdChanged) {
         if (userIdChanged && reference != null) {
@@ -148,10 +141,10 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
                             }
                         });
 
-
             }
         }, AsyncEmitter.BackpressureMode.BUFFER)
                 .subscribeOn(Schedulers.newThread());
+
     }
 
     @Override
