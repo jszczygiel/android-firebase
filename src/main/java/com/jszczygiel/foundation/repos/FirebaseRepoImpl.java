@@ -242,6 +242,11 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
     }
 
     @Override
+    public void update(String referenceId, T model) {
+        table.child(referenceId).updateChildren(model.toMap());
+    }
+
+    @Override
     public Observable<Tuple<Integer, T>> observe() {
         return subject;
     }
