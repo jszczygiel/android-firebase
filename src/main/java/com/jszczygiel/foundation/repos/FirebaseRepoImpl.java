@@ -265,6 +265,20 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
     }
 
     @Override
+    public void put(final T model) {
+        get(model.getId()).count().subscribe(new Action1<Integer>() {
+            @Override
+            public void call(Integer next) {
+                if (next == 0) {
+                    add(model);
+                } else {
+                    update(model);
+                }
+            }
+        });
+    }
+
+    @Override
     public Observable<Tuple<Integer, T>> observe() {
         return subject;
     }
