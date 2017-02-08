@@ -20,10 +20,11 @@ import com.jszczygiel.foundation.rx.schedulers.SchedulerHelper;
 
 import java.util.List;
 
-import rx.AsyncEmitter;
+import rx.Emitter;
 import rx.Observable;
 import rx.exceptions.OnErrorNotImplementedException;
 import rx.functions.Action1;
+import rx.functions.Cancellable;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
@@ -120,9 +121,9 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
             throw new DatabaseException("no valid itemId");
         }
 
-        return Observable.fromEmitter(new Action1<AsyncEmitter<T>>() {
+        return Observable.fromEmitter(new Action1<Emitter<T>>() {
             @Override
-            public void call(final AsyncEmitter<T> emitter) {
+            public void call(final Emitter<T> emitter) {
                 final Query localReference = database.getReference(
                         getTableName()).child(referenceId).child(
                         id).orderByKey();
@@ -144,7 +145,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
 
                     }
                 };
-                emitter.setCancellation(new AsyncEmitter.Cancellable() {
+                emitter.setCancellation(new Cancellable() {
                     @Override
                     public void cancel() throws Exception {
                         localReference.removeEventListener(listener);
@@ -153,7 +154,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
                 localReference.addListenerForSingleValueEvent(listener);
 
             }
-        }, AsyncEmitter.BackpressureMode.BUFFER)
+        }, Emitter.BackpressureMode.BUFFER)
                 .subscribeOn(Schedulers.newThread());
 
     }
@@ -168,9 +169,9 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
         LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " getAll");
         checkPreConditions();
 
-        return Observable.fromEmitter(new Action1<AsyncEmitter<T>>() {
+        return Observable.fromEmitter(new Action1<Emitter<T>>() {
             @Override
-            public void call(final AsyncEmitter<T> emitter) {
+            public void call(final Emitter<T> emitter) {
                 final Query localReference = getReference().orderByKey();
                 final ValueEventListener listener = new ValueEventListener() {
                     @Override
@@ -191,7 +192,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
                         localReference.removeEventListener(this);
                     }
                 };
-                emitter.setCancellation(new AsyncEmitter.Cancellable() {
+                emitter.setCancellation(new Cancellable() {
                     @Override
                     public void cancel() throws Exception {
                         localReference.removeEventListener(listener);
@@ -199,7 +200,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
                 });
                 localReference.addListenerForSingleValueEvent(listener);
             }
-        }, AsyncEmitter.BackpressureMode.BUFFER)
+        }, Emitter.BackpressureMode.BUFFER)
                 .subscribeOn(Schedulers.newThread());
     }
 
