@@ -212,8 +212,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
         }
     }
 
-    @Override
-    public void add(T model) {
+    protected void add(T model) {
         LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " add");
 
         checkPreConditions();
@@ -240,8 +239,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
                 });
     }
 
-    @Override
-    public void update(final T model) {
+    protected void update(final T model) {
         checkPreConditions();
         LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " update");
         get(model.getId()).observeOn(SchedulerHelper.getDatabaseWriterScheduler()).subscribe(
