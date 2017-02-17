@@ -217,7 +217,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
         LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " add");
 
         checkPreConditions();
-        getReference().child(model.getId()).setValue(model);
+        getReference().child(model.id()).setValue(model);
     }
 
     protected void checkPreConditions() {
@@ -243,7 +243,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
     protected void update(final T model) {
         checkPreConditions();
         LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " update");
-        get(model.getId()).observeOn(SchedulerHelper.getDatabaseWriterScheduler()).subscribe(
+        get(model.id()).observeOn(SchedulerHelper.getDatabaseWriterScheduler()).subscribe(
                 new Action1<T>() {
                     @Override
                     public void call(T next) {
@@ -265,7 +265,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
 
     @Override
     public void put(final T model) {
-        get(model.getId()).count().subscribe(new Action1<Integer>() {
+        get(model.id()).count().subscribe(new Action1<Integer>() {
             @Override
             public void call(Integer next) {
                 if (next == 0) {
