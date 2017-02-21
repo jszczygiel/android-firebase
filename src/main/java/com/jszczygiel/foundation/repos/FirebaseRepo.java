@@ -7,13 +7,13 @@ import rx.Observable;
 
 public interface FirebaseRepo<T extends BaseModel> extends Repo<T> {
 
-    Observable<Boolean> setUserId(String userId);
+  Observable<Boolean> setUserId(String userId);
 
-    String getUserId();
+  String getUserId();
 
-    boolean isPublic();
+  boolean isPublic();
 
-    Observable<T> get(String id, String referenceId);
+  Observable<T> get(String id, String referenceId);
 
-    void update(String refernceId, T model);
+  void update(String refernceId, T model);
 }

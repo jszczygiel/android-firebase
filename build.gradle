@@ -30,7 +30,7 @@ allprojects {
 apply plugin: 'com.android.library'
 apply plugin: 'com.github.dcendents.android-maven'
 
-group='com.github.jszczygiel'
+group = 'com.github.jszczygiel'
 
 android {
     compileSdkVersion rootProject.ext.compileApi
