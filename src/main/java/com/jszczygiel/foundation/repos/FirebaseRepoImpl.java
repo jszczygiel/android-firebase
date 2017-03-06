@@ -1,7 +1,6 @@
 package com.jszczygiel.foundation.repos;
 
 import android.text.TextUtils;
-
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -16,9 +15,7 @@ import com.jszczygiel.foundation.helpers.LoggerHelper;
 import com.jszczygiel.foundation.repos.interfaces.BaseModel;
 import com.jszczygiel.foundation.rx.PublishSubject;
 import com.jszczygiel.foundation.rx.schedulers.SchedulerHelper;
-
 import java.util.List;
-
 import rx.Emitter;
 import rx.Observable;
 import rx.exceptions.OnErrorNotImplementedException;
@@ -68,7 +65,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
           if (subject.hasObservers()) {
             subject.onNext(
-                new Tuple<>(SubjectAction.ADDED, dataSnapshot.getValue(getType())));
+                new Tuple<>(SubjectAction.ADDED, create(dataSnapshot)));
           }
         }
 
@@ -76,7 +73,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
         public void onChildChanged(DataSnapshot dataSnapshot, String s) {
           if (subject.hasObservers()) {
             subject.onNext(new Tuple<>(SubjectAction.CHANGED,
-                dataSnapshot.getValue(getType())));
+                create(dataSnapshot)));
           }
         }
 
@@ -84,7 +81,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
         public void onChildRemoved(DataSnapshot dataSnapshot) {
           if (subject.hasObservers()) {
             subject.onNext(new Tuple<>(SubjectAction.REMOVED,
-                dataSnapshot.getValue(getType())));
+                create(dataSnapshot)));
           }
         }
 
@@ -110,6 +107,10 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
     }
   }
 
+  public T create(DataSnapshot dataSnapshot) {
+    return dataSnapshot.getValue(getType());
+  }
+
   public abstract Class<T> getType();
 
   @Override
@@ -129,7 +130,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
         final ValueEventListener listener = new ValueEventListener() {
           @Override
           public void onDataChange(DataSnapshot dataSnapshot) {
-            T model = dataSnapshot.getValue(getType());
+            T model = create(dataSnapshot);
             if (model != null) {
               emitter.onNext(model);
             }
@@ -176,7 +177,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
           @Override
           public void onDataChange(DataSnapshot dataSnapshot) {
             for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-              T model = snapshot.getValue(getType());
+              T model = create(snapshot);
               if (model != null) {
                 emitter.onNext(model);
               }
