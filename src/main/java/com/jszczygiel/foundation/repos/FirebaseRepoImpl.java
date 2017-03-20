@@ -21,7 +21,6 @@ import rx.exceptions.OnErrorNotImplementedException;
 import rx.functions.Action1;
 import rx.functions.Cancellable;
 import rx.functions.Func1;
-import rx.schedulers.Schedulers;
 
 public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseRepo<T> {
 
@@ -151,8 +150,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
         localReference.addListenerForSingleValueEvent(listener);
 
       }
-    }, Emitter.BackpressureMode.BUFFER)
-        .subscribeOn(Schedulers.newThread());
+    }, Emitter.BackpressureMode.BUFFER);
 
   }
 
@@ -197,8 +195,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
         });
         localReference.addListenerForSingleValueEvent(listener);
       }
-    }, Emitter.BackpressureMode.BUFFER)
-        .subscribeOn(Schedulers.newThread());
+    }, Emitter.BackpressureMode.BUFFER);
   }
 
   @Override
@@ -227,7 +224,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
   public Observable<T> remove(final String id) {
     LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " remove");
     checkPreConditions();
-    return get(id).observeOn(SchedulerHelper.getDatabaseWriterScheduler()).map(
+    return get(id).observeOn(SchedulerHelper.databaseWriterScheduler()).map(
         new Func1<T, T>() {
           @Override
           public T call(T map) {
@@ -240,7 +237,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
   protected void update(final T model) {
     checkPreConditions();
     LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " update");
-    get(model.id()).observeOn(SchedulerHelper.getDatabaseWriterScheduler()).subscribe(
+    get(model.id()).observeOn(SchedulerHelper.databaseWriterScheduler()).subscribe(
         new Action1<T>() {
           @Override
           public void call(T next) {
