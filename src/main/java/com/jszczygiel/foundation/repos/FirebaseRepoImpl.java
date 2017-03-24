@@ -117,7 +117,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
       throw new DatabaseException("no valid itemId");
     }
 
-    return Observable.fromEmitter(new Action1<Emitter<T>>() {
+    return Observable.create(new Action1<Emitter<T>>() {
       @Override
       public void call(final Emitter<T> emitter) {
         final Query localReference = DatabaseSingleton.getInstance().getReference(
@@ -164,7 +164,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
     LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " getAll");
     checkPreConditions();
 
-    return Observable.fromEmitter(new Action1<Emitter<T>>() {
+    return Observable.create(new Action1<Emitter<T>>() {
       @Override
       public void call(final Emitter<T> emitter) {
         final Query localReference = getReference().orderByKey();
