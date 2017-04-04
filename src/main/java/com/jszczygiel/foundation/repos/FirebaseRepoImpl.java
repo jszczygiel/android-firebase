@@ -37,12 +37,10 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
   public abstract String getTableName();
 
   @Override
-  public Observable<Boolean> setUserId(String userId) {
+  public void setUserId(String userId) {
     final boolean userIdChanged = !userId.equals(this.userId);
     this.userId = userId;
     init(userIdChanged);
-    return Observable.just(true);
-
   }
 
   @Override
@@ -55,7 +53,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
       getReference().removeEventListener(reference);
       reference = null;
     }
-    if (reference == null) {
+    if (reference == null && withRemoteListener()) {
       reference = getReference().addChildEventListener(new ChildEventListener() {
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
@@ -93,6 +91,10 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
         }
       });
     }
+  }
+
+  public boolean withRemoteListener() {
+    return true;
   }
 
   protected DatabaseReference getReference() {

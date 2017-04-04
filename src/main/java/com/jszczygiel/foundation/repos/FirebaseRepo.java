@@ -7,7 +7,7 @@ import rx.Observable;
 
 public interface FirebaseRepo<T extends BaseModel> extends Repo<T> {
 
-  Observable<Boolean> setUserId(String userId);
+  void setUserId(String userId);
 
   String getUserId();
 
