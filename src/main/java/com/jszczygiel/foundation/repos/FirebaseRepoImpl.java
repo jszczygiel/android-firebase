@@ -122,9 +122,11 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
     return Observable.create(new Action1<Emitter<T>>() {
       @Override
       public void call(final Emitter<T> emitter) {
-        final Query localReference = DatabaseSingleton.getInstance().getReference(
-            getTableName()).child(referenceId).child(
-            id).orderByKey();
+        final Query localReference = DatabaseSingleton.getInstance()
+            .getReference(getTableName())
+            .child(referenceId)
+            .child(id)
+            .orderByKey();
         final ValueEventListener listener = new ValueEventListener() {
           @Override
           public void onDataChange(DataSnapshot dataSnapshot) {
