@@ -6,7 +6,11 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseException;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Query;
+import com.google.firebase.database.Transaction;
+import com.google.firebase.database.Transaction.Handler;
+import com.google.firebase.database.Transaction.Result;
 import com.google.firebase.database.ValueEventListener;
 import com.jszczygiel.foundation.containers.Tuple;
 import com.jszczygiel.foundation.enums.SubjectAction;
@@ -15,6 +19,7 @@ import com.jszczygiel.foundation.repos.interfaces.BaseModel;
 import com.jszczygiel.foundation.rx.PublishSubject;
 import com.jszczygiel.foundation.rx.schedulers.SchedulerHelper;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import rx.Emitter;
 import rx.Observable;
 import rx.exceptions.OnErrorNotImplementedException;
@@ -111,14 +116,40 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
 
   public abstract Class<T> getType();
 
-  @Override
-  public Observable<T> get(final String id, final String referenceId) {
-    LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " get:" + id);
-    checkPreConditions();
-    if (TextUtils.isEmpty(id)) {
-      throw new DatabaseException("no valid itemId");
-    }
+  private Observable<T> getFresh(final String id, final String referenceId) {
+    return Observable.create(new Action1<Emitter<T>>() {
+      @Override
+      public void call(final Emitter<T> emitter) {
+        final DatabaseReference localReference = DatabaseSingleton.getInstance()
+            .getReference(getTableName())
+            .child(referenceId)
+            .child(id);
+        localReference.runTransaction(new Handler() {
+          @Override
+          public Result doTransaction(MutableData mutableData) {
+            return Transaction.success(mutableData);
+          }
 
+          @Override
+          public void onComplete(DatabaseError databaseError, boolean b,
+              DataSnapshot dataSnapshot) {
+            if (databaseError == null) {
+              T model = create(dataSnapshot);
+              if (model != null) {
+                emitter.onNext(model);
+              }
+              emitter.onCompleted();
+            } else {
+              emitter.onError(databaseError.toException());
+            }
+          }
+        });
+
+      }
+    }, Emitter.BackpressureMode.BUFFER);
+  }
+
+  private Observable<T> getStale(final String id, final String referenceId) {
     return Observable.create(new Action1<Emitter<T>>() {
       @Override
       public void call(final Emitter<T> emitter) {
@@ -156,6 +187,18 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
       }
     }, Emitter.BackpressureMode.BUFFER);
 
+  }
+
+  @Override
+  public Observable<T> get(final String id, final String referenceId) {
+    LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " get:" + id);
+    checkPreConditions();
+    if (TextUtils.isEmpty(id)) {
+      throw new DatabaseException("no valid itemId");
+    }
+
+    return getFresh(id, referenceId).timeout(300, TimeUnit.MILLISECONDS)
+        .onErrorResumeNext(FirebaseRepoImpl.this.getStale(id, referenceId));
   }
 
   @Override
