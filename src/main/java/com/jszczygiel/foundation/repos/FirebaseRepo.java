@@ -13,6 +13,8 @@ public interface FirebaseRepo<T extends BaseModel> extends Repo<T> {
 
   boolean isPublic();
 
+  Observable<T> get(String id, String referenceId, boolean forceFresh);
+
   Observable<T> get(String id, String referenceId);
 
   void update(String refernceId, T model);

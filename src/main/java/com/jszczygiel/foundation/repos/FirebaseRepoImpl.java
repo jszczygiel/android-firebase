@@ -190,15 +190,23 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
   }
 
   @Override
-  public Observable<T> get(final String id, final String referenceId) {
+  public Observable<T> get(final String id, final String referenceId, boolean forceFresh) {
     LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " get:" + id);
     checkPreConditions();
     if (TextUtils.isEmpty(id)) {
       throw new DatabaseException("no valid itemId");
     }
+    if (forceFresh) {
+      return getFresh(id, referenceId).timeout(300, TimeUnit.MILLISECONDS)
+          .onErrorResumeNext(getStale(id, referenceId));
+    } else {
+      return getStale(id, referenceId);
+    }
+  }
 
-    return getFresh(id, referenceId).timeout(300, TimeUnit.MILLISECONDS)
-        .onErrorResumeNext(FirebaseRepoImpl.this.getStale(id, referenceId));
+  @Override
+  public Observable<T> get(final String id, final String referenceId) {
+    return get(id, referenceId, false);
   }
 
   @Override
