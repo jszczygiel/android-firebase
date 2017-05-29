@@ -206,7 +206,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
 
   @Override
   public Observable<T> get(final String id, final String referenceId) {
-    return get(id, referenceId, false);
+    return get(id, referenceId, true);
   }
 
   @Override
