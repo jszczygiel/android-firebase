@@ -17,7 +17,5 @@ public interface FirebaseRepo<T extends BaseModel> extends Repo<T> {
 
   Observable<T> get(String id, String referenceId);
 
-  Observable<T> getAll(boolean forceFresh);
-
   void update(String refernceId, T model);
 }

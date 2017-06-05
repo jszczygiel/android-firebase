@@ -214,41 +214,11 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
     return get(id, userId);
   }
 
-  private Observable<T> getAllFresh() {
-    return Observable.create(new Action1<Emitter<T>>() {
-      @Override
-      public void call(final Emitter<T> emitter) {
+  @Override
+  public Observable<T> getAll() {
+    LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " getAll");
+    checkPreConditions();
 
-        final DatabaseReference localReference = DatabaseSingleton.getInstance()
-            .getReference(getTableName());
-        localReference.runTransaction(new Handler() {
-          @Override
-          public Result doTransaction(MutableData mutableData) {
-            return Transaction.success(mutableData);
-          }
-
-          @Override
-          public void onComplete(DatabaseError databaseError, boolean b,
-              DataSnapshot dataSnapshot) {
-            if (databaseError == null) {
-              for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                T model = create(snapshot);
-                if (model != null) {
-                  emitter.onNext(model);
-                }
-              }
-              emitter.onCompleted();
-            } else {
-              emitter.onError(databaseError.toException());
-            }
-          }
-        });
-
-      }
-    }, Emitter.BackpressureMode.BUFFER);
-  }
-
-  private Observable<T> getAllStale() {
     return Observable.create(new Action1<Emitter<T>>() {
       @Override
       public void call(final Emitter<T> emitter) {
@@ -281,24 +251,6 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
         localReference.addListenerForSingleValueEvent(listener);
       }
     }, Emitter.BackpressureMode.BUFFER);
-  }
-
-  @Override
-  public Observable<T> getAll(boolean forceFresh) {
-    LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " getAll");
-    checkPreConditions();
-
-    if (forceFresh) {
-      return getAllFresh().timeout(300, TimeUnit.MILLISECONDS)
-          .onErrorResumeNext(getAllStale());
-    } else {
-      return getAllStale();
-    }
-  }
-
-  @Override
-  public Observable<T> getAll() {
-    return getAll(false);
   }
 
   @Override
