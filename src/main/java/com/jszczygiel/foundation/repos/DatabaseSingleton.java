@@ -6,12 +6,11 @@ public class DatabaseSingleton {
 
   private static FirebaseDatabase INSTANCE;
 
-  public synchronized static FirebaseDatabase getInstance() {
+  public static synchronized FirebaseDatabase getInstance() {
     if (INSTANCE == null) {
       INSTANCE = FirebaseDatabase.getInstance();
       INSTANCE.setPersistenceEnabled(true);
     }
     return INSTANCE;
   }
-
 }
