@@ -1,36 +1,4 @@
-buildscript {
-    repositories {
-        maven { url 'https://maven.fabric.io/public' }
-        jcenter()
-        mavenCentral()
-    }
-    dependencies {
-        classpath "com.android.tools.build:gradle:$rootProject.ext.gradlePluginVersion"
-        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
-        classpath 'com.google.gms:google-services:3.0.0'
-    }
-}
-allprojects {
-    repositories {
-        maven { url 'https://maven.fabric.io/public' }
-        jcenter()
-        maven { url "https://jitpack.io" }
-        mavenCentral()
-    }
-    buildscript {
-        repositories {
-            maven { url 'https://maven.fabric.io/public' }
-            jcenter()
-            maven { url "https://jitpack.io" }
-            mavenCentral()
-        }
-    }
-}
-
 apply plugin: 'com.android.library'
-apply plugin: 'com.github.dcendents.android-maven'
-
-group = 'com.github.jszczygiel'
 
 android {
     compileSdkVersion rootProject.ext.compileApi
@@ -38,18 +6,11 @@ android {
 
     defaultConfig {
         minSdkVersion 15
-        targetSdkVersion 24
+        targetSdkVersion 25
         versionCode 1
         versionName "1.0"
     }
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-    }
 }
-
 
 configurations.all {
     resolutionStrategy.force "com.android.support:support-annotations:$rootProject.ext.supportVersion"

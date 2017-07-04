@@ -6,6 +6,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseException;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.Transaction;
@@ -33,8 +34,10 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
   private final PublishSubject<List<T>> collectionSubject;
   protected String userId;
   private ChildEventListener reference;
+  private final FirebaseDatabase firebaseDatabase;
 
-  public FirebaseRepoImpl() {
+  public FirebaseRepoImpl(FirebaseDatabase firebaseDatabase) {
+    this.firebaseDatabase = firebaseDatabase;
     collectionSubject = PublishSubject.createWith(PublishSubject.BUFFER);
     subject = PublishSubject.createWith(PublishSubject.BUFFER);
   }
@@ -102,9 +105,9 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
 
   protected DatabaseReference getReference() {
     if (isPublic()) {
-      return DatabaseSingleton.getInstance().getReference(getTableName());
+      return firebaseDatabase.getReference(getTableName());
     } else {
-      return DatabaseSingleton.getInstance().getReference(getTableName()).child(userId);
+      return firebaseDatabase.getReference(getTableName()).child(userId);
     }
   }
 
@@ -120,10 +123,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
           @Override
           public void call(final Emitter<T> emitter) {
             final DatabaseReference localReference =
-                DatabaseSingleton.getInstance()
-                    .getReference(getTableName())
-                    .child(referenceId)
-                    .child(id);
+                firebaseDatabase.getReference(getTableName()).child(referenceId).child(id);
             localReference.runTransaction(
                 new Handler() {
                   @Override
@@ -156,7 +156,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
           @Override
           public void call(final Emitter<T> emitter) {
             final Query localReference =
-                DatabaseSingleton.getInstance()
+                firebaseDatabase
                     .getReference(getTableName())
                     .child(referenceId)
                     .child(id)
@@ -319,10 +319,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
 
   @Override
   public void update(String referenceId, T model) {
-    DatabaseSingleton.getInstance()
-        .getReference(getTableName())
-        .child(referenceId)
-        .updateChildren(model.toMap());
+    firebaseDatabase.getReference(getTableName()).child(referenceId).updateChildren(model.toMap());
   }
 
   @Override
