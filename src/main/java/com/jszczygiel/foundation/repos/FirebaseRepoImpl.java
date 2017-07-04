@@ -19,6 +19,7 @@ import com.jszczygiel.foundation.helpers.LoggerHelper;
 import com.jszczygiel.foundation.repos.interfaces.BaseModel;
 import com.jszczygiel.foundation.rx.PublishSubject;
 import com.jszczygiel.foundation.rx.schedulers.SchedulerHelper;
+import dagger.Lazy;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import rx.Emitter;
@@ -34,9 +35,9 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
   private final PublishSubject<List<T>> collectionSubject;
   protected String userId;
   private ChildEventListener reference;
-  private final FirebaseDatabase firebaseDatabase;
+  private final Lazy<FirebaseDatabase> firebaseDatabase;
 
-  public FirebaseRepoImpl(FirebaseDatabase firebaseDatabase) {
+  public FirebaseRepoImpl(Lazy<FirebaseDatabase> firebaseDatabase) {
     this.firebaseDatabase = firebaseDatabase;
     collectionSubject = PublishSubject.createWith(PublishSubject.BUFFER);
     subject = PublishSubject.createWith(PublishSubject.BUFFER);
@@ -105,9 +106,9 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
 
   protected DatabaseReference getReference() {
     if (isPublic()) {
-      return firebaseDatabase.getReference(getTableName());
+      return firebaseDatabase.get().getReference(getTableName());
     } else {
-      return firebaseDatabase.getReference(getTableName()).child(userId);
+      return firebaseDatabase.get().getReference(getTableName()).child(userId);
     }
   }
 
@@ -123,7 +124,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
           @Override
           public void call(final Emitter<T> emitter) {
             final DatabaseReference localReference =
-                firebaseDatabase.getReference(getTableName()).child(referenceId).child(id);
+                firebaseDatabase.get().getReference(getTableName()).child(referenceId).child(id);
             localReference.runTransaction(
                 new Handler() {
                   @Override
@@ -157,6 +158,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
           public void call(final Emitter<T> emitter) {
             final Query localReference =
                 firebaseDatabase
+                    .get()
                     .getReference(getTableName())
                     .child(referenceId)
                     .child(id)
@@ -319,7 +321,11 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
 
   @Override
   public void update(String referenceId, T model) {
-    firebaseDatabase.getReference(getTableName()).child(referenceId).updateChildren(model.toMap());
+    firebaseDatabase
+        .get()
+        .getReference(getTableName())
+        .child(referenceId)
+        .updateChildren(model.toMap());
   }
 
   @Override

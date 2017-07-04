@@ -10,6 +10,21 @@ android {
         versionCode 1
         versionName "1.0"
     }
+    buildTypes {
+        releaseDebuggable{}
+        fabric{}
+        debugMinified{}
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+    flavorDimensions "api"
+    productFlavors {
+        ci {
+            dimension "api"
+        }
+    }
 }
 
 configurations.all {
@@ -17,11 +32,12 @@ configurations.all {
 }
 
 dependencies {
-    compile project(':android-common')
+    api project(':android-common')
 
     //data
-    compile "com.google.firebase:firebase-database:$rootProject.ext.firebaseVersion"
-    compile "com.google.firebase:firebase-auth:$rootProject.ext.firebaseVersion"
-    compile "com.google.android.gms:play-services-auth:$rootProject.ext.firebaseVersion"
+    api "com.google.dagger:dagger:$rootProject.ext.dagger"
+    api "com.google.firebase:firebase-database:$rootProject.ext.firebaseVersion"
+    api "com.google.firebase:firebase-auth:$rootProject.ext.firebaseVersion"
+    api "com.google.android.gms:play-services-auth:$rootProject.ext.firebaseVersion"
 
 }
