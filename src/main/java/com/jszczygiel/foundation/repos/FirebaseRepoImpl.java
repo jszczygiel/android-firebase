@@ -17,7 +17,6 @@ import com.jszczygiel.foundation.containers.Tuple;
 import com.jszczygiel.foundation.enums.SubjectAction;
 import com.jszczygiel.foundation.helpers.LoggerHelper;
 import com.jszczygiel.foundation.repos.interfaces.BaseModel;
-import com.jszczygiel.foundation.rx.PublishSubject;
 import com.jszczygiel.foundation.rx.schedulers.SchedulerHelper;
 import dagger.Lazy;
 import java.util.List;
@@ -28,6 +27,7 @@ import rx.exceptions.OnErrorNotImplementedException;
 import rx.functions.Action1;
 import rx.functions.Cancellable;
 import rx.functions.Func1;
+import rx.subjects.PublishSubject;
 
 public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseRepo<T> {
 
@@ -39,8 +39,8 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
 
   public FirebaseRepoImpl(Lazy<FirebaseDatabase> firebaseDatabase) {
     this.firebaseDatabase = firebaseDatabase;
-    collectionSubject = PublishSubject.createWith(PublishSubject.BUFFER);
-    subject = PublishSubject.createWith(PublishSubject.BUFFER);
+    this.collectionSubject = PublishSubject.create();
+    this.subject = PublishSubject.create();
   }
 
   public abstract String getTableName();
