@@ -329,6 +329,16 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
   }
 
   @Override
+  public void update(String referenceId, String id, T model) {
+    firebaseDatabase
+        .get()
+        .getReference(getTableName())
+        .child(referenceId)
+        .child(id)
+        .updateChildren(model.toMap());
+  }
+
+  @Override
   public void put(final T model) {
     get(model.id())
         .count()
