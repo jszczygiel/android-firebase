@@ -233,13 +233,17 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
                 new ValueEventListener() {
                   @Override
                   public void onDataChange(DataSnapshot dataSnapshot) {
-                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                      T model = create(snapshot);
-                      if (model != null) {
-                        emitter.onNext(model);
+                    try {
+                      for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                        T model = create(snapshot);
+                        if (model != null) {
+                          emitter.onNext(model);
+                        }
                       }
+                      emitter.onCompleted();
+                    } catch (DatabaseException exception) {
+                      emitter.onError(exception);
                     }
-                    emitter.onCompleted();
                   }
 
                   @Override
