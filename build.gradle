@@ -39,8 +39,8 @@ dependencies {
 
     //data
     api "com.google.dagger:dagger:$rootProject.ext.dagger"
-    api "com.google.firebase:firebase-database:$rootProject.ext.firebase_version"
-    api "com.google.firebase:firebase-auth:$rootProject.ext.firebase_version"
-    api "com.google.android.gms:play-services-auth:$rootProject.ext.gms_auth"
+    api "com.google.firebase:firebase-database:$rootProject.ext.firebaseDatabase"
+    api "com.google.firebase:firebase-auth:$rootProject.ext.firebaseAuth"
+    api "com.google.android.gms:play-services-auth:$rootProject.ext.gms"
 
 }
