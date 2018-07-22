@@ -15,7 +15,7 @@ import com.google.firebase.database.Transaction.Result;
 import com.google.firebase.database.ValueEventListener;
 import com.jszczygiel.foundation.containers.Tuple;
 import com.jszczygiel.foundation.enums.SubjectAction;
-import com.jszczygiel.foundation.helpers.LoggerHelper;
+import com.jszczygiel.foundation.helpers.L;
 import com.jszczygiel.foundation.repos.interfaces.BaseModel;
 import com.jszczygiel.foundation.rx.schedulers.SchedulerHelper;
 import dagger.Lazy;
@@ -94,7 +94,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
                       getReference().removeEventListener(reference);
-                      LoggerHelper.log(databaseError.toException());
+                      L.print(databaseError.toException());
                     }
                   });
     }
@@ -195,7 +195,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
 
   @Override
   public Observable<T> get(final String id, final String referenceId, boolean forceFresh) {
-    LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " get:" + id);
+    L.d("firebase:" + this.getClass().toString() + " get:" + id);
     checkPreConditions();
     if (TextUtils.isEmpty(id)) {
       throw new DatabaseException("no valid itemId");
@@ -221,7 +221,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
 
   @Override
   public Observable<T> getAll() {
-    LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " getAll");
+    L.d("firebase:" + this.getClass().toString() + " getAll");
     checkPreConditions();
 
     return Observable.create(
@@ -267,7 +267,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
 
   @Override
   public void notify(T model) {
-    LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " notify");
+    L.d("firebase:" + this.getClass().toString() + " notify");
 
     if (subject.hasObservers()) {
       subject.onNext(new Tuple<>(SubjectAction.CHANGED, model));
@@ -275,7 +275,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
   }
 
   protected void add(T model) {
-    LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " add");
+    L.d("firebase:" + this.getClass().toString() + " add");
 
     checkPreConditions();
     getReference().child(model.id()).setValue(model);
@@ -289,7 +289,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
 
   @Override
   public Observable<T> remove(final String id) {
-    LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " remove");
+    L.d("firebase:" + this.getClass().toString() + " remove");
     checkPreConditions();
     return get(id)
         .observeOn(SchedulerHelper.databaseWriterScheduler())
@@ -305,7 +305,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
 
   protected void update(final T model) {
     checkPreConditions();
-    LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " update");
+    L.d("firebase:" + this.getClass().toString() + " update");
     get(model.id())
         .observeOn(SchedulerHelper.databaseWriterScheduler())
         .subscribe(
@@ -371,7 +371,7 @@ public abstract class FirebaseRepoImpl<T extends BaseModel> implements FirebaseR
 
   @Override
   public void clear() {
-    LoggerHelper.logDebug("firebase:" + this.getClass().toString() + " update");
+    L.d("firebase:" + this.getClass().toString() + " update");
 
     checkPreConditions();
     getReference().removeValue();
