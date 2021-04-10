@@ -11,7 +11,6 @@ android {
     }
     buildTypes {
         releaseDebuggable{}
-        fabric{}
         debugMinified{}
     }
 
@@ -37,10 +36,12 @@ configurations.all {
 dependencies {
     api project(':android-common')
 
+    api platform("com.google.firebase:firebase-bom:$rootProject.ext.firebasPlatform")
+
     //data
     api "com.google.dagger:dagger:$rootProject.ext.dagger"
-    api "com.google.firebase:firebase-database:$rootProject.ext.firebaseDatabase"
-    api "com.google.firebase:firebase-auth:$rootProject.ext.firebaseAuth"
+    api 'com.google.firebase:firebase-database'
+    api 'com.google.firebase:firebase-auth'
     api "com.google.android.gms:play-services-auth:$rootProject.ext.gms"
 
 }
