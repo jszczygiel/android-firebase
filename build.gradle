@@ -22,6 +22,7 @@ android {
     lint {
         abortOnError false
     }
+    namespace 'com.jszczygiel.firebase'
 }
 
 configurations.all {
